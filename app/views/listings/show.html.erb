@@ -1,0 +1,30 @@
+<p id="notice"><%= notice %></p>
+
+<p>
+  <b>Title:</b>
+  <%= @listing.title %>
+</p>
+
+<p>
+  <b>Owner:</b>
+  <%= @listing.owner %>
+</p>
+
+<p>
+  <b>Rent:</b>
+  <%= @listing.rent %>
+</p>
+
+<p>
+  <b>Contact:</b>
+  <%= @listing.contact %>
+</p>
+
+<p>
+  <b>Location:</b>
+  <%= @listing.location %>
+</p>
+
+
+<%= link_to 'Edit', edit_listing_path(@listing) %> |
+<%= link_to 'Back', listings_path %>

@@ -1,0 +1,51 @@
+<h1>Edit listing</h1>
+
+<form id="edit-listing" name="listing">
+  <div class="field">
+    <label for="title"> title:</label>
+    <input type="text" name="title" id="title" value="<%= title %>" >
+  </div>
+
+  <div class="field">
+    <label for="owner"> owner:</label>
+    <input type="text" name="owner" id="owner" value="<%= owner %>" >
+  </div>
+
+  <div class="field">
+    <label for="rent"> rent:</label>
+    <input type="text" name="rent" id="rent" value="<%= rent %>" >
+  </div>
+
+  <div class="field">
+    <label for="contact"> contact:</label>
+    <input type="text" name="contact" id="contact" value="<%= contact %>" >
+  </div>
+
+  <div class="field">
+    <label for="location"> location:</label>
+    <input type="text" name="location" id="location" value="<%= location %>" >
+  </div>
+
+  <div class="field">
+    <label for="country"> Country:</label>
+    <select onchange="print_state('state',this.selectedIndex);" id="country" name ="country">
+    </select>
+  </div>
+
+
+  <div class="field">
+    <label for="state"> State:</label>
+    <select name ="state" id ="state" value="<%= state %>"></select>
+  </div>
+
+
+
+
+  <div class="actions">
+    <input type="submit" value="Update Listing" />
+  </div>
+
+</form>
+
+<a href="#/index" id="back">Back</a>
+

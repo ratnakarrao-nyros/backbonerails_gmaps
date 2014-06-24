@@ -1,0 +1,334 @@
+<!-- <div id="listings">
+</div>       -->
+  
+
+
+<!-- 
+<a data-toggle="modal" href="#myModal" class="btn btn-primary">Launch modal</a> -->
+
+<div id="myModal" class="modal hide fade" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+    <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+        <h3 id="myModalLabel">Modal header</h3>
+    </div>
+    <div class="modal-body">
+        <p>One fine body…</p>
+    </div>
+    <div class="modal-footer">
+        <button class="btn" data-dismiss="modal" aria-hidden="true">Close</button>
+        <button class="btn btn-primary">Save changes</button>
+    </div>
+</div>
+
+
+
+<div id="show-listings">
+</div>
+
+
+
+<div id="grid"></div>
+<div id="paginator"></div>
+<div id="new-list"></div>
+
+
+<h2> Geo Location </h2>
+
+
+
+
+
+<div style='width: 800px;'>
+  <div id="map" style='width: 800px; height: 400px;'></div>
+</div>
+
+
+
+
+<script>
+      // Works exactly like Backbone.Collection.
+      function callGmap(arr) {
+        handler = Gmaps.build('Google');
+        handler.buildMap({
+        provider: {
+          //disableDefaultUI: true
+          // pass in other Google Maps API options here
+          },
+        internal: {
+          id: 'map'
+          }
+        },
+        function(){
+          markers = handler.addMarkers(eval(arr));
+          handler.bounds.extendWith(markers);
+          handler.fitMapToBounds();
+        }
+      );
+      }
+      
+
+
+
+
+
+      var Issues = Backbone.PageableCollection.extend({
+        model: Bdemo.Models.Listing,
+        // url: "https://api.github.com/search/issues",
+        mode: "server" ,
+
+        url: '/listings' ,
+
+        events: {
+          "click #paginationSelect" : "fetchSelectedData"
+        },
+
+        fetchSelectedData: function(){
+        },
+
+        // Initial pagination states
+        state: {
+          pageSize: 3,
+         /* sortKey: "updated",*/
+          order: 1
+        },
+
+        // You can remap the query parameters from `state` keys from
+        // the default to those your server supports
+        queryParams: {
+          totalPages: null,
+          totalRecords: null,
+          sortKey: "sort"
+        },
+
+
+
+        parseState: function (resp, queryParams, state, options) {
+          return {totalRecords: resp.total_pages};
+        },
+
+        // get the actual records
+        parseRecords: function (resp, options) {
+          callGmap(resp.hash);
+          return resp.listings;
+        }
+
+      });
+
+
+      var DeleteCell = Backgrid.Cell.extend({
+        template: _.template('<a href="#" class="btn btn-danger btn-small">Delete</a>'),
+        events: {
+          "click": "deleteRow"
+        },
+        deleteRow: function (e) {
+          e.preventDefault();
+          // console.log(JSON.stringify(this.model));
+          // console.log(JSON.stringify(this.model.collection))
+          this.model.destroy()
+          //this.model.collection.remove(this.model);
+          
+        },
+        render: function () {
+          this.$el.html(this.template());
+          this.delegateEvents();
+          return this;
+        }
+      });
+
+
+
+      var AddCell = Backgrid.Cell.extend({
+        template: _.template('<a href="#" class="btn btn-primary btn-small">Show</a>'),
+        events: {
+          "click": "showRow"
+        },
+        showRow: function (e) {
+          e.preventDefault();
+          var view = new Bdemo.Views.Listings.ShowView({model: this.model})
+          $(".modal-body").html(view.render().el)
+          $('#myModal').modal('show')
+        },
+        render: function () {
+          this.$el.html(this.template({id: this.model.id}));
+          this.delegateEvents();
+          return this;
+        }
+      });
+
+
+
+      var EditCell = Backgrid.Cell.extend({
+        template: _.template('<a href="#" class="btn btn-small">Edit</a>'),
+        events: {
+          "click": "editRow"
+        },
+        editRow: function (e) {
+          e.preventDefault();
+          var view = new Bdemo.Views.Listings.EditView({model: this.model})
+          $(".modal-body").html(view.render().el)
+          print_country("country")
+          $("#country").val(this.model.get("country"))
+          $("#state").val(this.model.get("state"))
+          $('#myModal').modal('show')
+        },
+        render: function () {
+          this.$el.html(this.template({id: this.model.id}));
+          this.delegateEvents();
+          return this;
+        }
+      });
+         
+
+     var TitledUriCell = Backgrid.UriCell.extend({
+
+        className: "titled-uri-cell",
+
+        render: function() {
+          this.$el.empty();
+          var formattedValue = this.model.id
+          var measureVal = this.formatter.fromRaw(this.model.attributes.MeasureCategory);
+          this.$el.append($("<a href='#" + formattedValue + "'> </a>").text(this.model.get("location")));
+          this.delegateEvents();
+          return this;
+        }
+     });
+
+
+      var issues = new Issues();
+
+      var grid = new Backgrid.Grid({
+
+        columns: [ 
+      /*  {
+        name: "id",
+        editable: false,
+        cell: Backgrid.IntegerCell.extend({
+          orderSeparator: ''
+        })
+        },*/
+        {
+           name: "title",
+           cell: "string",
+           sortable: true,
+           //editable: false
+         },
+        {
+          name: "owner",
+          cell: "string",
+          sortable: true,
+          //editable: true
+        },
+        {
+          name: "location",
+          label: "Location",
+          cell: TitledUriCell , //Backgrid.UriCell.extend({
+
+          //}),
+
+          sortable: true,
+          editable: false
+        },
+
+        // { 
+        //   label: "Last Login Time",
+        //   name: "id",
+        //   cell: Backgrid.UriCell.extend({
+
+        //   }),
+        // },
+        {
+          cell: AddCell
+        },
+        {
+          cell: EditCell
+        },
+        {
+          // name: "weight",
+          // label: "Hello",
+          cell: DeleteCell
+        }
+        ],
+
+        collection: issues
+      });
+
+
+     var footer = Backgrid.Footer.extend({
+      events: {
+      "click a": "myfunction"
+      },
+
+      myfunction: function() {
+        alert("i");
+      }
+
+     });
+
+      var paginator = new Backgrid.Extension.Paginator({
+        collection: issues,
+        event : {
+          "click .backgrid-paginator a" : "fetchSelectedData"
+        },
+
+        fetchSelectedData: function(e){
+        }
+      });
+
+
+      // paginator.listenTo(issues, "reset", function () {
+      //     console.log('i heard that');
+      //     handler = Gmaps.build('Google');
+      //     handler.buildMap({
+      //       provider: {
+      //         //disableDefaultUI: true
+      //         // pass in other Google Maps API options here
+      //         },
+      //       internal: {
+      //         id: 'map'
+      //         }
+      //       },
+      //       function(){
+      //         console.log(<%=raw @hash.to_json.inspect %>)
+      //         markers = handler.addMarkers(<%=raw @hash.to_json %>);
+      //         handler.bounds.extendWith(markers);
+      //         handler.fitMapToBounds();
+      //       }
+      //     );
+      // });
+
+      $("#grid").append(grid.render().$el);
+      $("#paginator").append(paginator.render().$el);
+      $("#new-list").append('<a href="#/new" class="btn btn-info btn-small">New Listing</a>');
+      issues.fetch({reset: true});
+
+    </script>
+
+
+
+<script type="text/javascript">
+  $(function() {
+
+    window.router = new Bdemo.Routers.ListingsRouter({listings: <%= @listings.to_json.html_safe -%>, 
+                                                      pagination: <%= @pagination.to_json.html_safe -%>  });
+
+    window.router = new Bdemo.Routers.VisitorsRouter({visitors: <%= @visitors.to_json.html_safe -%>});
+
+    Backbone.history.start();
+
+
+  });
+
+
+
+  
+</script>
+
+<style>
+ 
+ .backgrid-paginator ul li {}
+  });
+
+ .error {
+    color: red;
+ }
+</style>

@@ -1,0 +1,20 @@
+/ pagination view written using haml_coffee_assets gem
+/ it looks much cleaner than templates like ejs
+.pagination
+  - if @page_info.pages > 1
+    - if @page_info.prev
+      %a.previous_page{href: "#"} <
+    - else
+      %span.previous_page.disabled <
+    - for page in @page_info.pagination
+      - if page is "..."
+        %span.gap ...
+      - else if page is @page_info.page
+        %em.current= page
+      - else
+        %a.set_page{href: "#"}= page
+ 
+    - if @page_info.next
+      %a.next_page{href: "#"} >
+    - else
+      %span.next_page.disabled >
